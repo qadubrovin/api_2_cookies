@@ -1,13 +1,12 @@
 import com.codeborne.selenide.WebDriverRunner;
-import io.restassured.RestAssured;
-import io.restassured.http.Cookies;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Cookie;
 
 import java.util.Map;
 
 import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
@@ -38,13 +37,13 @@ public class SetCookiesTests {
                             new Cookie("Nop.customer", authorizationCookie)));
         });
 
-        step("Открыть веб интерфейс и убедиться, что кука подставилась успешно, товар добавлен в корзину", () ->
+        step("Открыть веб интерфейс", () ->
                 open("http://demowebshop.tricentis.com/"));
 
         step("Проверить количество товаров", () -> {
             $(".cart-qty").shouldHave(text("5"));
         });
-            }
+    }
 
     @Test
     void setFullCookieTest() {
@@ -53,7 +52,7 @@ public class SetCookiesTests {
             Map<String, String> cookies = given()
                     .contentType("application/x-www-form-urlencoded; charset=UTF-8")
                     .body("product_attribute_72_5_18=53&product_attribute_72_6_19=54&" +
-                            "product_attribute_72_3_20=58&addtocart_72.EnteredQuantity=5")
+                            "product_attribute_72_3_20=58&addtocart_72.EnteredQuantity=7")
                     .when()
                     .post("http://demowebshop.tricentis.com/addproducttocart/details/72/1")
                     .then()
@@ -62,15 +61,14 @@ public class SetCookiesTests {
                     .cookies();
 
 
-
             step("Открыть небольшой контент, чтобы была сессия браузера, куда можно подставить куки", () ->
                     open("http://demowebshop.tricentis.com/Themes/DefaultClean/Content/images/mobile-menu-collapse.png"));
 
-            step("Подставить куки в браузер", () -> {
-                    cookies.entrySet()
-                            .stream()
-                            .forEach(cookie -> WebDriverRunner.getWebDriver()
-                                    .manage().addCookie(new Cookie(cookie.getKey(), cookie.getValue())));
+            step("Подставить полные куки в браузер", () -> {
+                cookies.entrySet()
+                        .stream()
+                        .forEach(cookie -> WebDriverRunner.getWebDriver()
+                                .manage().addCookie(new Cookie(cookie.getKey(), cookie.getValue())));
 
             });
         });
@@ -79,11 +77,8 @@ public class SetCookiesTests {
                 open("http://demowebshop.tricentis.com/"));
 
         step("Проверить количество товаров", () -> {
-            $(".cart-qty").shouldHave(text("5"));
+            $(".cart-qty").shouldHave(text("7"));
         });
-
-
-        sleep(3000);
 
     }
 }
